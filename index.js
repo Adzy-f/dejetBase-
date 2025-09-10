@@ -175,7 +175,7 @@ Hello, terimakasih sudah menggunakan dejetBase! 🤖
    }
  }
 } catch (error) {
-        console.error("😬[Error handling message]:\n", error); 
+        console.error("Error handling message:", error); 
         }
 }
 
