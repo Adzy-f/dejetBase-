@@ -29,7 +29,7 @@ async function startWhatsAppBot() {
         printQRInTerminal: false,
         auth: {
             creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })), // di bikin silent biar anu
         },
         msgRetryCounterCache: undefined,
         generateHighQualityLinkPreview: true,
@@ -45,10 +45,11 @@ async function startWhatsAppBot() {
                 console.log('connection closed due to ', lastDisconnect?.error, ', reconnecting ', shouldReconnect);
                 if (shouldReconnect) startWhatsAppBot();
             }
-            if (connection === 'open') console.log('opened connection');
+            if (connection === 'open') console.log('✅ Mantap terkoneksi kawan');
         }
 
         if (events['creds.update']) await saveCreds();
+
 
         if (events['messages.upsert']) {
             const upsert = events['messages.upsert'];
@@ -67,7 +68,7 @@ async function startWhatsAppBot() {
     if (!state.creds?.me?.id) {
         console.log('😢 Input nomor pake 62857xxx: ');
         const phoneNumber = await q('> ');
-        const code = await sock.requestPairingCode(phoneNumber);
+        const code = await sock.requestPairingCode(phoneNumber, c.kodeP); // edit kode di config.js
         console.log('😓 Pairing Code: ', code?.match(/.{1,4}/g)?.join('-') || code);
     }
 }
@@ -83,67 +84,99 @@ async function handleIncomingMessage(sock, msg) {
             '';
         if (!text) return;
 
-        console.log(`Received message from ${sender}: ${text}`);
+        console.log(`🗣️: Received message from ${sender}: ${text}`);
 
         // AUTO REPLY KEYWORDS
+        // ada aja
+        let Pesan = [
+        "Halo juga cuy",
+        "Iya bang halo",
+        "Yo yo halo",
+        "Iya bang juga",
+        "Yoi bang apa kabar?",
+        "Juga bangg",
+        "Iya juga",
+        "😹",
+        "🗿",
+    ];
+    let pesanR = Pesan[Math.floor(Math.random() * Pesan.length)];
         const greetings = ['hai', 'halo', 'helo', 'hi'];
         if (greetings.some(g => text.toLowerCase().includes(g))) {
-            await sock.sendMessage(sender, { text: 'Hai juga! 👋' }, { quoted: msg });
+            await sock.sendMessage(sender, { text: pesanR }, { quoted: msg });
         }
 
         // COMMAND HANDLER
         if (text.startsWith('/')) {
-            const command = text.slice(1).split(' ')[0].toLowerCase();
-            const args = text.split(' ').slice(1);
-
-            switch (command) {
-            case 'help': {
-               let menu = `Hello terimaksih memggunakan dejetBase\n\n> Info-\nNama bot: ${c.namabot}\nVersi: 0.1-xcG\n { Menu nya } = \n /ping\n/helo\n/info\n/cuaca\n/sticker`
+    const command = text.slice(1).split(' ')[0].toLowerCase();
+    const args = text.split(' ').slice(1);
+  // forward msg
+    async function FW(tek) {
+      await sock.sendMessage(sender,
+         { text: tek, 
+            contextInfo: {
+              isForwarded: true,
+              forwardingScore: 100
             }
-           await sock.sendMessage(sender, { text: menu }, { quoted: msg });
-            break
-                case 'ping':
-                    await sock.sendMessage(sender, { text: 'Pong! 🥲' }, { quoted: msg });
-                    break;
+         }, { quoted: msg });
+         }
 
-                case 'halo':
-                    await sock.sendMessage(sender, { text: `Halo juga! 😎` }, { quoted: msg });
-                    break;
+        switch (command) {
+    case 'help': {
+        let menu = `
+Hello, terimakasih sudah menggunakan dejetBase! 🤖
 
-                case 'info':
-                    await sock.sendMessage(sender, { 
-                        text: `Ini adalah base bot WhatsApp dengan Baileys.\n> Nama bot: ${c.namabot}\n> Nama owner: ${c.ownerN}` 
-                    }, { quoted: msg });
-                    break;
+> Info:
+• Nama Bot: dejetBase?
+• Versi: ${c.versi}
 
-                case 'cuaca':
-                    try {
-                        const kota = args.join(' ') || 'Jakarta';
-                        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=-6.2&longitude=106.8&hourly=temperature_2m`);
-                        const data = await res.json();
-                        await sock.sendMessage(sender, { text: `Cuaca di ${kota}: ${data.hourly.temperature_2m[0]}°C` }, { quoted: msg });
-                    } catch (err) {
-                        await sock.sendMessage(sender, { text: 'Gagal ambil data cuaca 😅' }, { quoted: msg });
-                    }
-                    break;
+📋 Menu Utama:
+/ping – Tes kecepatan bot
+/halo – Balasan sapaan
+/info – Info bot
+/cuaca – Cek cuaca
+/sticker – Buat stiker dari gambar`
+      await FW(menu)
+      }
+   break
+   case 'ping':
+      FW('Pong! 🥲')
+   break;
 
-                case 'sticker':
-                    if (msg.message.imageMessage) {
-                        const buffer = await downloadMediaMessage(msg, 'buffer', { logger: pino({ level: 'silent' }) });
-                        await sock.sendMessage(sender, { sticker: { url: buffer } }, { quoted: msg });
-                    } else {
-                        await sock.sendMessage(sender, { text: 'Kirim gambar dulu baru ketik /sticker 😅' }, { quoted: msg });
-                    }
-                    break;
+   case 'halo':
+      FW(`Halo juga! 😎`)
+   break;
 
-                default:
-                    await sock.sendMessage(sender, { text: 'Command tidak dikenali. 😅' }, { quoted: msg });
-            }
+   case 'info':
+      FW(`Ini adalah base bot WhatsApp dengan Baileys.\n> Nama bot: ${c.namabot}\n> Nama owner: ${c.ownerN}`)
+   break;
+
+   case 'cuaca':
+      try {
+          const kota = args.join(' ') || 'Jakarta';
+          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=-6.2&longitude=106.8&hourly=temperature_2m`);
+          const data = await res.json();
+          await FW(`Cuaca di ${kota}: ${data.hourly.temperature_2m[0]}°C`);
+          } catch (err) {
+          await sock.sendMessage(sender, { text: 'Gagal ambil data cuaca 😅' }, { quoted: msg });
+          }
+   break;
+// ganti aja klo error
+   case 'sticker':
+       if (msg.message.imageMessage) {
+          const buffer = await downloadMediaMessage(msg, 'buffer', { logger: pino({ level: 'silent' }) });
+          await sock.sendMessage(sender, { sticker: { url: buffer } }, { quoted: msg });
+         } else {
+         await FW('Kirim gambar dulu baru ketik /sticker 😅');
+   }
+   break;
+
+   default:
+     await sock.sendMessage(sender, { text: 'Apa itu bang?' }, { quoted: msg });
+   }
+ }
+} catch (error) {
+        console.error("😬[Error handling message]:\n", error); 
         }
-
-    } catch (error) {
-        console.error("Error handling message:", error);
-    }
 }
 
 // Start bot

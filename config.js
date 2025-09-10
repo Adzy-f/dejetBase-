@@ -2,7 +2,8 @@
 const c = { 
    namabot: "dejetBase?",
    ownerN: "Adzy",
-   versi: "0.1-xcG"
+   versi: "0.1.1-ufx",
+   kodeP: "ANDROID8" // kode pair
 };
 
 export default c
