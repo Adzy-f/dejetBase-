@@ -15,13 +15,14 @@
     "baileys",
     "whiskeysockets"
   ],
-  "author": "Your Name",
+  "author": "dZ",
   "license": "MIT",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.6.0",
     "pino": "^8.19.0",
-    "readline": "^1.3.0"
+    "readline": "^1.3.0",
+    "node-fetch": "^3.3.2",
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
