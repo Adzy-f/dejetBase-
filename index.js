@@ -84,7 +84,7 @@ async function handleIncomingMessage(sock, msg) {
             '';
         if (!text) return;
 
-        console.log(`🗣️: Received message from ${sender}: ${text}`);
+       // console.log(`🗣️: Received message from ${sender}: ${text}`);
 
         // AUTO REPLY KEYWORDS
         // ada aja
@@ -175,7 +175,7 @@ Hello, terimakasih sudah menggunakan dejetBase! 🤖
    }
  }
 } catch (error) {
-        console.error("Error handling message:", error); 
+        console.error("😬[Error handling message]:\n", error); 
         }
 }
 
