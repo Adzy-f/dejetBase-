@@ -1,3 +1,4 @@
+// Horeeeeeeeeeeee
 // ini letak konfigurasi nama bot dan anu anu
 const c = { 
    namabot: "dejetBase?",
